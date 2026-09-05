@@ -64,97 +64,216 @@ EFI folder and Guide for Thinkpad T450 and T450s Hackintosh Monterey.
 
 ## Note: If you need to edit Config.plist, don't use OpenCore configurator or Clover configurator, use PlistEdit pro, PropperTree, or Xcode.
 
-# Installation Guide (Online Installer Reccomended)
+# Installation Guide
 
-## macOS Monterey Offline Installer (Only availabile for macOS as of now)
+## SMBIOS Generation & Configuration
 
-macOS Guide
+Before installing macOS, it is recommended to generate a **unique SMBIOS** for your machine and apply it to `config.plist`.
 
-1. Download [gibMacOS](https://github.com/corpnewt/gibMacOS)
-2. Right click gibMacOS.command and click open (a terminal window will launch)
-3. Type "c" to change the catalog and then type "4" to view the list of all developer betas.
-4. Select an option on the list (macOS 12.0 will likely be number 1 on the list
-5. Type in the corresponding number (gibmacOS will start to download macOS 12.0)
-6. It will download Monterey (11.78 GB) and it will place the contents in gibMacOS folder under macOS Downloads/developer/071-51840 - 12.0 macOS 12 Beta
-7. Open the InstallAssistant.pkg that will extract the installer to your Applications folder
-8. Open disk utility and format your usb as macOS Extended Journaled with a GUID partiton scheme.
-9. Open a terminal window and run this command: `sudo /Applications/Install\ macOS\ 12\ Beta.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume`
+A properly configured SMBIOS is important for Apple services such as **iMessage, FaceTime, iCloud, App Store, and other iServices**. A valid SMBIOS alone does not guarantee that every iService will work, but using a unique and properly configured SMBIOS is an important part of the setup.
 
-Note: Change `MyVolume` to the name of your usb partiton
+### Required Tools
 
-10. Open terminal and run "diskutil list" then find your flash drive along with its EFI partition identifier
-11. Run "sudo diskutil mount identifier" (replace "identifier with your EFI identifier number)
-12. Download the latest EFI created [here](https://github.com/racka98/Lenovo-Thinkpad-T450-T450s-Hackintosh-Guide-Opencore/releases)
-13. Copy the EFI folder and paste it in your USB partiton
+- [GenSMBIOS](https://github.com/corpnewt/GenSMBIOS) — Generate SMBIOS information.
+- [OpenCore Auxiliary Tools (OCAT)](https://github.com/ic005k/OCAuxiliaryTools) — Edit and validate `config.plist`.
 
-`Note: Make sure to apply the correct bios settings before continuing (provided above)`
+### 1. Choose an Appropriate SMBIOS
 
-14. Restart your laptop and hit `F12`
-15. Select your flash drive as temporary boot option
-16. Now in the OpenCore menu select `Install macOS 12 Beta`
-Great! Now install and set up macOS Monterey as usual. When you are done be sure to read the post install guide.
+Choose an SMBIOS that is appropriate for the hardware and macOS version you are installing.
 
-## macOS Big Sur Online (Recomended)
+For this T450/T450s EFI, the configured SMBIOS may be:
 
-**This is a simple and quick summary of the online install USB creation**
+```text
+MacBookPro12,1
+```
 
-Windows Guide:
+**Do not copy SMBIOS values from another Hackintosh.** Generate your own values.
 
-1. Download [rufus](https://rufus.ie/en/)
-2. Select the desired flash drive you would like to put the installer on under the device option
-3. Select `non-bootable` as the boot selection (REQUIRED)
-4. Select `FAT-32` or `Large FAT-32` as the partition scheme
-5. Open up the usb partition in file explorer and delete the files created by rufus
-6. Create a folder on that partiton named `com.apple.recovery.boot`
-7. Install [python](https://www.python.org/downloads/) (Make sure you select add python x.x to path)
-8. Download and extract the [OpenCore Package](https://github.com/acidanthera/OpenCorePkg/releases)
-9. Select the macrecovery folder in the opencorepkg folder at `/Utilities/macrecovery/`
-10. Click on home > copy path at the top of file explorer
-11. Fire up command prompt and type cd and hit spacebar and paste the path of the macrecovery folder.
-12. Run the command `./macrecovery.py -b Mac-E43C1C25D4880AD6 -m 00000000000000000`
-13. This will put some files in the macrecovery folder but we only need BaseSystem.dmg and BaseSystem.chunklist
-14. Paste both of those files in the `com.apple.recovery.boot` folder in your flash drive partiton
-15. Download the latest EFI created [here](https://github.com/racka98/Lenovo-Thinkpad-T450-T450s-Hackintosh-Guide-Opencore/releases)
-16. Copy the EFI folder and paste it in your USB partiton
+### 2. Generate SMBIOS with GenSMBIOS
 
-`Note: Make sure to apply the correct bios settings before continuing (provided above)`
+Download and run [GenSMBIOS](https://github.com/corpnewt/GenSMBIOS).
 
-17. Restart your laptop and hit `F12`
-18. Select your flash drive as temporary boot option
-19. Now in the OpenCore menu select the name of your USB partiton
-Great! Now install and set up macOS Big Sur as usual. When you are done be sure to read the post install guide.
+1. Select **Install/Update MacSerial** if required.
+2. Select **Generate SMBIOS**.
+3. Enter the SMBIOS model you selected, for example:
 
-macOS Guide:
+```text
+MacBookPro12,1
+```
 
-1. Launch Disk Utility
-2. Select View > Show all devices at the top left
-3. Select your flash drive and format it as `MS-DOS (FAT)` or `FAT-32`
-4. Open up your usb partiton and create a folder named `com.apple.recovery.boot`
-5. Download and extract the [OpenCore Package](https://github.com/acidanthera/OpenCorePkg/releases)
-6. Select the macrecovery folder in the opencorepkg folder at `/Utilities/macrecovery/`
-7. Right click and click "New terminal at folder"
-8. Run the command `./macrecovery.py -b Mac-E43C1C25D4880AD6 -m 00000000000000000` in the terminal window
-9. This will put some files in the macrecovery folder but we only need BaseSystem.dmg and BaseSystem.chunklist
-10. Paste both of those files in the `com.apple.recovery.boot` folder in your flash drive partiton
-11. Download the latest EFI created [here](https://github.com/racka98/Lenovo-Thinkpad-T450-T450s-Hackintosh-Guide-Opencore/releases)
-12. Copy the EFI folder and paste it in your USB partiton
+GenSMBIOS will generate values including:
 
-`Note: Make sure to apply the correct bios settings before continuing (provided above)`
+- `SystemProductName`
+- `SystemSerialNumber`
+- `MLB`
+- `SystemUUID`
+- `ROM`
 
-13. Restart your laptop and hit `F12`
-14. Select your flash drive as temporary boot option
-15. Now in the OpenCore menu select the name of your USB partiton
-Great! Now install and set up macOS Big Sur as usual. When you are done be sure to read the post install guide.
+> **Important:** Keep your generated serial number, MLB, UUID, and ROM private. Do not publish them in your GitHub repository, screenshots, or support requests.
 
-Linux Guide:
+### 3. Apply the SMBIOS Using OCAT
 
-Follow this [guide](https://dortania.github.io/OpenCore-Install-Guide/installer-guide/linux-install.html#downloading-macos) to set up the online macOS Big Sur Installer in Linux. I haven't gotten time to write a detailed guide.
+Open your EFI's `config.plist` with [OpenCore Auxiliary Tools (OCAT)](https://github.com/ic005k/OCAuxiliaryTools).
 
-The [Dortania Installation Guide](https://dortania.github.io/OpenCore-Install-Guide/installer-guide/) is more detailed and you easily refer to it for more details. I haven't gotten time to write a detailed guide.
+Navigate to:
 
-## Note: 
-## 1. If you are installing Catalina or Mojave it is important that you disable Airportitlwm.kext in Kernel/Add/20 of Config.plist and enable itlwm.kext instead. Read Post Install #4.
-## 2. For those having a black screen or frozen installer when booting the install USB, create the USB using macOS and not Linux or Windows. Details on that [here](https://github.com/racka98/Lenovo-Thinkpad-T450-T450s-Hackintosh-Guide-Opencore/issues/2#issuecomment-732408469)
+```text
+PlatformInfo → Generic
+```
+
+Enter the values generated by GenSMBIOS:
+
+| OpenCore field | GenSMBIOS value |
+|---|---|
+| `SystemProductName` | SMBIOS Type |
+| `SystemSerialNumber` | Serial |
+| `MLB` | Board Serial |
+| `SystemUUID` | SmUUID |
+| `ROM` | ROM |
+
+Example:
+
+```text
+PlatformInfo
+└── Generic
+    ├── SystemProductName = MacBookPro12,1
+    ├── SystemSerialNumber = <your generated serial>
+    ├── MLB = <your generated board serial>
+    ├── SystemUUID = <your generated UUID>
+    └── ROM = <your generated ROM>
+```
+
+Save the `config.plist` after applying the values.
+
+### 4. Check the Serial Number
+
+Before using the SMBIOS, verify that the generated serial number is not already associated with a real Mac.
+
+If Apple's coverage/check page identifies the serial as an existing Mac, generate another serial with GenSMBIOS.
+
+The goal is to use a unique serial rather than copying one from another machine.
+
+### 5. iServices
+
+A properly generated SMBIOS is required for a reliable iServices setup.
+
+After applying the SMBIOS, follow the [Dortania iServices guide](https://dortania.github.io/OpenCore-Post-Install/universal/iservices.html) for the remaining iServices configuration.
+
+This is especially relevant for:
+
+- iMessage
+- FaceTime
+- iCloud
+- App Store
+- Other Apple services that use device identification
+
+> **Never use another person's SMBIOS values.** Generate your own SMBIOS and keep the generated identifiers private.
+
+---
+
+## macOS Big Sur & Monterey Online Installer (Recommended)
+
+This is the recommended installation method for **macOS Big Sur and macOS Monterey**. It creates an online/recovery installer, so the installer downloads the required macOS files during installation.
+
+### Windows Guide
+
+1. Download [Rufus](https://rufus.ie/en/).
+2. Select the USB flash drive you want to use under **Device**.
+3. Select `Non-bootable` as the boot selection (**REQUIRED**).
+4. Select `FAT-32` or `Large FAT-32` as the partition scheme.
+5. Open the USB partition in File Explorer and delete the files created by Rufus.
+6. Create a folder on the USB partition named `com.apple.recovery.boot`.
+7. Install [Python](https://www.python.org/downloads/) and make sure **Add Python to PATH** is enabled during installation.
+8. Download and extract the [OpenCore Package](https://github.com/acidanthera/OpenCorePkg/releases).
+9. Open the `Utilities/macrecovery/` folder from the extracted OpenCore package.
+10. Right-click the folder and choose **Copy as path**.
+11. Open Command Prompt, type `cd `, paste the copied path, and press Enter.
+12. Run:
+
+```bash
+python macrecovery.py -b Mac-E43C1C25D4880AD6 -m 00000000000000000
+```
+
+13. This will download the recovery files. Copy **`BaseSystem.dmg`** and **`BaseSystem.chunklist`** to the `com.apple.recovery.boot` folder on the USB.
+14. Download the latest EFI from the [Releases](https://github.com/racka98/Lenovo-Thinkpad-T450-T450s-Hackintosh-Guide-Opencore/releases) page.
+15. Copy the `EFI` folder to the root of the USB partition.
+16. **Make sure the correct BIOS settings above have been applied before continuing.**
+17. Restart the laptop and press `F12`.
+18. Select the USB flash drive as the temporary boot device.
+19. In the OpenCore picker, select the USB installer/recovery entry.
+20. Follow the macOS installer and install **Big Sur or Monterey** as normal.
+
+> **Note:** The online installer method works for both **macOS Big Sur and macOS Monterey**. Select the desired macOS version from the recovery installer when prompted.
+
+### macOS Guide
+
+1. Launch **Disk Utility**.
+2. Select **View → Show All Devices**.
+3. Select your USB flash drive and format it as `MS-DOS (FAT)` / `FAT-32`.
+4. Open the USB partition and create a folder named `com.apple.recovery.boot`.
+5. Download and extract the [OpenCore Package](https://github.com/acidanthera/OpenCorePkg/releases).
+6. Open `Utilities/macrecovery/`.
+7. Right-click the folder and select **New Terminal at Folder**.
+8. Run:
+
+```bash
+python3 macrecovery.py -b Mac-E43C1C25D4880AD6 -m 00000000000000000
+```
+
+9. Copy **`BaseSystem.dmg`** and **`BaseSystem.chunklist`** into the `com.apple.recovery.boot` folder on the USB.
+10. Download the latest EFI from the [Releases](https://github.com/racka98/Lenovo-Thinkpad-T450-T450s-Hackintosh-Guide-Opencore/releases) page.
+11. Copy the `EFI` folder to the root of the USB partition.
+12. **Make sure the correct BIOS settings above have been applied before continuing.**
+13. Restart the laptop and press `F12`.
+14. Select the USB flash drive as the temporary boot device.
+15. In the OpenCore picker, select the USB installer/recovery entry.
+16. Follow the macOS installer and install **Big Sur or Monterey** as normal.
+
+### Linux Guide
+
+Follow the [Dortania macOS Online Installer guide](https://dortania.github.io/OpenCore-Install-Guide/installer-guide/linux-install.html#downloading-macos) to create the online macOS installer in Linux.
+
+The online installer can be used for both **macOS Big Sur and macOS Monterey**.
+
+---
+
+## macOS Monterey Offline Installer
+
+The offline installer method is provided as an alternative when an online/recovery installer is not suitable.
+
+### macOS Guide
+
+1. Download [gibMacOS](https://github.com/corpnewt/gibMacOS).
+2. Run `gibMacOS.command` on a Mac.
+3. Select the desired macOS Monterey version.
+4. Download the installer files.
+5. Open the downloaded `InstallAssistant.pkg` to place the macOS installer application in `/Applications`.
+6. Open **Disk Utility** and format your USB as `Mac OS Extended (Journaled)` with a `GUID Partition Map`.
+7. Create the installer using Apple's `createinstallmedia` tool. For example:
+
+```bash
+sudo /Applications/Install\ macOS\ Monterey.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume
+```
+
+Replace `MyVolume` with the name of your USB partition.
+
+8. Mount the USB's EFI partition.
+9. Download the latest EFI from the [Releases](https://github.com/racka98/Lenovo-Thinkpad-T450-T450s-Hackintosh-Guide-Opencore/releases) page.
+10. Copy the `EFI` folder to the EFI partition.
+11. **Make sure the correct BIOS settings above have been applied before continuing.**
+12. Restart the laptop and press `F12`.
+13. Select the USB flash drive as the temporary boot device.
+14. In the OpenCore picker, select **Install macOS Monterey**.
+15. Complete the installation and then follow the **Post Install** section.
+
+### Important Notes
+
+- The online installer is recommended for both **Big Sur and Monterey**.
+- If the online installer gives you a black screen or freezes during installation, try recreating the installer using macOS.
+- Make sure your BIOS settings are correct before troubleshooting OpenCore or the installer.
+- After installation, complete the SMBIOS/iServices configuration and the rest of the Post Install guide.
+
+---
 
 # Post Install
 Once you have verifed that your machine boots properly without any issues as described in the "What Works section", proceed to do the following
