@@ -109,6 +109,8 @@ GenSMBIOS will generate values including:
 - `SystemUUID`
 - `ROM`
 
+> **Important — use a real, valid Mac SMBIOS:** iServices require an SMBIOS that corresponds to a real Apple Mac device. After generating the SMBIOS, verify the generated **serial number** using Apple's official [Check Coverage](https://checkcoverage.apple.com/) website. The serial should be recognized by Apple and the result should correspond to the Mac model you selected. If Apple does not recognize the serial or it does not correspond to the expected model, generate another SMBIOS and check again until you get a valid device match. **Do not use the serial number, MLB, or other identifying values belonging to a Mac you own or have access to.**
+
 > **Important:** Keep your generated serial number, MLB, UUID, and ROM private. Do not publish them in your GitHub repository, screenshots, or support requests.
 
 ### 3. Apply the SMBIOS Using OCAT
