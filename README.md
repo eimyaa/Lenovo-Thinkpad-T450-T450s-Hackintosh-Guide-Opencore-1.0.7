@@ -1,12 +1,14 @@
-# Lenovo Thinkpad T450 & T450s Hackintosh Guide for Mojave, Catalina, Big Sur & Monterey with OpenCore 1.0.7
-This repo contains the installation guide and EFI files required to get a perfectly functional Monterey, Big Sur, Catalina and Mojave hackintosh on your T450 or T450s since they share the same hardware. Everything is stable and functional as described in this Readme. 
+# Lenovo Thinkpad T450 & T450s Hackintosh Guide for Mojave, Catalina, Big Sur, Monterey, Ventura & Sequoia with OpenCore 1.0.7
+This repo contains the installation guide and EFI files required to get a perfectly functional Monterey, Big Sur, Catalina and Mojave Hackintosh on your T450 or T450s since they share the same hardware. Everything is stable and functional as described in this Readme.
+
+**This EFI also supports macOS Ventura and macOS Sequoia using the same OpenCore version. Ventura and Sequoia require additional post-install root patches through [OpenCore Legacy Patcher (OCLP)](https://github.com/dortania/OpenCore-Legacy-Patcher), and both require additional Intel Wi-Fi setup as described in the guide.**
 
 ## A few worthy mentions about this repo:
 
 - **This guide is not for models with Haswell 4th gen CPU**
 - **The patched ACPI files were first created by [EchoEspirit](https://github.com/EchoEsprit/Hackintosh-Catalina-OpenCore-Lenovo-T450s-efi). I tweaked a couple of things and fixed some errors that were happening on T450 + added Intel WiFi drivers from [Openintelwireless](https://github.com/OpenIntelWireless)**
 - **I will try my best to keep the repo updated with the latest kexts and OpenCore version**
-- **This EFI works with macOS Monterey, Big Sur, Catalina and Mojave**
+- **This EFI works with macOS Monterey, Big Sur, Catalina, Mojave, Ventura and Sequoia using OpenCore 1.0.7**
 -**For macOS Monterey this EFI will not have full support since it's still in Beta so don't expect flawless functionality**
 - **This EFI is Configured with Big Sur in mind. If you are using it on Monterey, Catalina or Mojave read the the whole guide to know where to make the necessary changes**
 - **With every EFI update you retrieve from here please remember to go through the post install guide**
@@ -15,6 +17,19 @@ This repo contains the installation guide and EFI files required to get a perfec
 
 ![About macOS Monterey](https://i.imgur.com/hIZ3lkb.png)
 
+## Quick Navigation
+
+- [SMBIOS Generation & Configuration](#smbios-generation--configuration)
+- [macOS Monterey Online Installer](#macos-monterey-online-installer)
+  - [Windows Guide](#windows-guide)
+  - [macOS Guide](#macos-guide)
+  - [Linux Guide](#linux-guide)
+- [macOS Ventura & Sequoia Online Installer](#macos-ventura--sequoia-online-installer)
+  - [Installation](#installation)
+  - [Post-Install — OpenCore Legacy Patcher (Ventura & Sequoia)](#post-install--opencore-legacy-patcher-ventura--sequoia)
+  - [Ventura & Sequoia Post-Install — Intel Wi-Fi](#ventura--sequoia-post-install--intel-wi-fi)
+- [macOS Monterey Offline Installer](#macos-monterey-offline-installer)
+
 # Introduction
 
 EFI folder and Guide for Thinkpad T450 and T450s Hackintosh Monterey.
@@ -22,7 +37,7 @@ EFI folder and Guide for Thinkpad T450 and T450s Hackintosh Monterey.
 - `Tested CPUs`: **i5-5200U/5300u & i7-5600u**
 - `Integrated Graphics`: **HD Graphics 5500**
 - `Sound Card`: **ALC292**
-- `Wireless Cards Tested`: **DW1820A 00JT494/Broadcom BCM94360CSAX/Intel 7265/7260**
+- `Wireless Cards Tested`: **Intel 7265/7260 & Intel AX210**
 
 # Bios
 
@@ -66,11 +81,12 @@ EFI folder and Guide for Thinkpad T450 and T450s Hackintosh Monterey.
 
 # Installation Guide
 
+
 ## SMBIOS Generation & Configuration
 
 Before installing macOS, it is recommended to generate a **unique SMBIOS** for your machine and apply it to `config.plist`.
 
-A properly configured SMBIOS is important for Apple services such as **iMessage, FaceTime, iCloud, App Store, and other iServices**. A valid SMBIOS alone does not guarantee that every iService will work, but using a unique and properly configured SMBIOS is an important part of the setup.
+A properly configured SMBIOS is important for Apple services such as **iMessage, FaceTime, iCloud, App Store, and other iServices**.
 
 ### Required Tools
 
@@ -87,7 +103,7 @@ For this T450/T450s EFI, the configured SMBIOS may be:
 MacBookPro12,1
 ```
 
-**Do not copy SMBIOS values from another Hackintosh.** Generate your own values.
+**Do not copy SMBIOS values from another Hackintosh or from another person's configuration.** Generate your own values.
 
 ### 2. Generate SMBIOS with GenSMBIOS
 
@@ -109,9 +125,9 @@ GenSMBIOS will generate values including:
 - `SystemUUID`
 - `ROM`
 
-> **Important — use a real, valid Mac SMBIOS:** iServices require an SMBIOS that corresponds to a real Apple Mac device. After generating the SMBIOS, verify the generated **serial number** using Apple's official [Check Coverage](https://checkcoverage.apple.com/) website. The serial should be recognized by Apple and the result should correspond to the Mac model you selected. If Apple does not recognize the serial or it does not correspond to the expected model, generate another SMBIOS and check again until you get a valid device match. **Do not use the serial number, MLB, or other identifying values belonging to a Mac you own or have access to.**
+> **Important — the SMBIOS must correspond to a real Apple Mac:** For iServices to work correctly, the generated SMBIOS should correspond to a real Apple Mac model/device. After generating the SMBIOS, verify the **serial number** using Apple's official [Check Coverage](https://checkcoverage.apple.com/) website. The serial should be recognized by Apple and the result should correspond to the Mac model you selected. If Apple does not recognize the serial or it does not correspond to the expected model, generate another SMBIOS and check again until you get a valid device match.
 
-> **Important:** Keep your generated serial number, MLB, UUID, and ROM private. Do not publish them in your GitHub repository, screenshots, or support requests.
+> **Do not use the SMBIOS of a real Mac that you own or have access to.** Generate a new SMBIOS with GenSMBIOS instead. Never publish your serial number, MLB, SystemUUID, or ROM in this repository, screenshots, or support requests.
 
 ### 3. Apply the SMBIOS Using OCAT
 
@@ -147,17 +163,21 @@ PlatformInfo
 
 Save the `config.plist` after applying the values.
 
-### 4. Check the Serial Number
+### 4. Verify the SMBIOS
 
-Before using the SMBIOS, verify that the generated serial number is not already associated with a real Mac.
+Before continuing with the installation, check the generated serial number using Apple's [Check Coverage](https://checkcoverage.apple.com/) page.
 
-If Apple's coverage/check page identifies the serial as an existing Mac, generate another serial with GenSMBIOS.
+The serial should:
 
-The goal is to use a unique serial rather than copying one from another machine.
+- Be recognized by Apple.
+- Correspond to the Mac model selected in GenSMBIOS.
+- Not be copied from another Hackintosh or from a Mac you own.
+
+If the serial is not recognized or does not correspond to the selected Mac model, generate another SMBIOS and check it again.
 
 ### 5. iServices
 
-A properly generated SMBIOS is required for a reliable iServices setup.
+A valid and properly generated SMBIOS is an important requirement for iServices. It does **not** guarantee that every iService will work by itself.
 
 After applying the SMBIOS, follow the [Dortania iServices guide](https://dortania.github.io/OpenCore-Post-Install/universal/iservices.html) for the remaining iServices configuration.
 
@@ -169,25 +189,25 @@ This is especially relevant for:
 - App Store
 - Other Apple services that use device identification
 
-> **Never use another person's SMBIOS values.** Generate your own SMBIOS and keep the generated identifiers private.
+> **Keep all SMBIOS identifiers private.** Do not publish your serial number, MLB, SystemUUID, or ROM in your GitHub repository.
 
 ---
 
-## macOS Big Sur & Monterey Online Installer (Recommended)
+## macOS Monterey & Big Sur Online Installer
 
-This is the recommended installation method for **macOS Big Sur and macOS Monterey**. It creates an online/recovery installer, so the installer downloads the required macOS files during installation.
+This section applies both for **macOS Monterey** & **macOS Big Sur**. The online/recovery installer is recommended because it downloads the required macOS files during installation.
 
 ### Windows Guide
 
 1. Download [Rufus](https://rufus.ie/en/).
-2. Select the USB flash drive you want to use under **Device**.
+2. Select the USB flash drive under **Device**.
 3. Select `Non-bootable` as the boot selection (**REQUIRED**).
 4. Select `FAT-32` or `Large FAT-32` as the partition scheme.
 5. Open the USB partition in File Explorer and delete the files created by Rufus.
-6. Create a folder on the USB partition named `com.apple.recovery.boot`.
-7. Install [Python](https://www.python.org/downloads/) and make sure **Add Python to PATH** is enabled during installation.
+6. Create a folder named `com.apple.recovery.boot` on the USB.
+7. Install [Python](https://www.python.org/downloads/) and make sure **Add Python to PATH** is enabled.
 8. Download and extract the [OpenCore Package](https://github.com/acidanthera/OpenCorePkg/releases).
-9. Open the `Utilities/macrecovery/` folder from the extracted OpenCore package.
+9. Open `Utilities/macrecovery/` from the extracted OpenCore package.
 10. Right-click the folder and choose **Copy as path**.
 11. Open Command Prompt, type `cd `, paste the copied path, and press Enter.
 12. Run:
@@ -196,23 +216,21 @@ This is the recommended installation method for **macOS Big Sur and macOS Monter
 python macrecovery.py -b Mac-E43C1C25D4880AD6 -m 00000000000000000
 ```
 
-13. This will download the recovery files. Copy **`BaseSystem.dmg`** and **`BaseSystem.chunklist`** to the `com.apple.recovery.boot` folder on the USB.
+13. Copy **`BaseSystem.dmg`** and **`BaseSystem.chunklist`** to the `com.apple.recovery.boot` folder on the USB.
 14. Download the latest EFI from the [Releases](https://github.com/racka98/Lenovo-Thinkpad-T450-T450s-Hackintosh-Guide-Opencore/releases) page.
 15. Copy the `EFI` folder to the root of the USB partition.
 16. **Make sure the correct BIOS settings above have been applied before continuing.**
 17. Restart the laptop and press `F12`.
 18. Select the USB flash drive as the temporary boot device.
 19. In the OpenCore picker, select the USB installer/recovery entry.
-20. Follow the macOS installer and install **Big Sur or Monterey** as normal.
-
-> **Note:** The online installer method works for both **macOS Big Sur and macOS Monterey**. Select the desired macOS version from the recovery installer when prompted.
+20. Follow the macOS installer and install **Monterey**.
 
 ### macOS Guide
 
 1. Launch **Disk Utility**.
 2. Select **View → Show All Devices**.
 3. Select your USB flash drive and format it as `MS-DOS (FAT)` / `FAT-32`.
-4. Open the USB partition and create a folder named `com.apple.recovery.boot`.
+4. Open the USB partition and create `com.apple.recovery.boot`.
 5. Download and extract the [OpenCore Package](https://github.com/acidanthera/OpenCorePkg/releases).
 6. Open `Utilities/macrecovery/`.
 7. Right-click the folder and select **New Terminal at Folder**.
@@ -222,20 +240,114 @@ python macrecovery.py -b Mac-E43C1C25D4880AD6 -m 00000000000000000
 python3 macrecovery.py -b Mac-E43C1C25D4880AD6 -m 00000000000000000
 ```
 
-9. Copy **`BaseSystem.dmg`** and **`BaseSystem.chunklist`** into the `com.apple.recovery.boot` folder on the USB.
+9. Copy **`BaseSystem.dmg`** and **`BaseSystem.chunklist`** into `com.apple.recovery.boot`.
 10. Download the latest EFI from the [Releases](https://github.com/racka98/Lenovo-Thinkpad-T450-T450s-Hackintosh-Guide-Opencore/releases) page.
 11. Copy the `EFI` folder to the root of the USB partition.
 12. **Make sure the correct BIOS settings above have been applied before continuing.**
 13. Restart the laptop and press `F12`.
 14. Select the USB flash drive as the temporary boot device.
 15. In the OpenCore picker, select the USB installer/recovery entry.
-16. Follow the macOS installer and install **Big Sur or Monterey** as normal.
+16. Follow the macOS installer and install **Monterey**.
 
 ### Linux Guide
 
 Follow the [Dortania macOS Online Installer guide](https://dortania.github.io/OpenCore-Install-Guide/installer-guide/linux-install.html#downloading-macos) to create the online macOS installer in Linux.
 
-The online installer can be used for both **macOS Big Sur and macOS Monterey**.
+---
+
+## macOS Ventura & Sequoia Online Installer
+
+The same online/recovery installer method can be used for **macOS Ventura and macOS Sequoia**. Both versions require **OpenCore Legacy Patcher (OCLP)** on the T450 because the Intel HD Graphics 5500 is a Broadwell iGPU and requires root patching on these newer macOS versions. [OCLP Post-Install](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html)
+
+### Installation
+
+Use the Windows, macOS, or Linux online-installer procedure from the Monterey section above to create the recovery USB. When booting the installer, select the macOS installer/recovery entry from OpenCore and complete the installation.
+
+Make sure the correct BIOS settings and your generated SMBIOS are already configured before installation.
+
+### Post-Install — OpenCore Legacy Patcher (Ventura & Sequoia)
+
+After Ventura or Sequoia boots:
+
+1. Download the latest [OpenCore Legacy Patcher (OCLP)](https://github.com/dortania/OpenCore-Legacy-Patcher/releases).
+2. Open OCLP and allow it to detect the system.
+3. Build/install OpenCore to your internal EFI if required by your setup.
+4. Open **Post-Install Root Patch** / **Post-Install Volume Patch**.
+5. Allow OCLP to download any required patching resources.
+6. Apply the available graphics/root patches.
+7. Restart when prompted.
+8. After reboot, verify that Intel HD 5500 graphics acceleration is working.
+
+The T450's **Intel HD Graphics 5500 (Broadwell)** requires root patching on Ventura, Sonoma, and Sequoia. OCLP provides the required legacy graphics patches. Root patches can be removed by macOS updates, so they may need to be re-applied after future updates. [OCLP Post-Install](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html)
+
+### Ventura & Sequoia Post-Install — Intel Wi-Fi
+
+**This section applies to both Ventura and Sequoia.** Both versions require the HeliPort setup described below for Intel Wi-Fi.
+
+The required **`itlwm.kext` is already included in this EFI**, so there is no need to download or add another copy. This guide only covers installing **HeliPort** and configuring it to start automatically after every login.
+
+Do **not** use `AirportItlwm.kext` for this Ventura/Sequoia setup.
+
+For Ventura and Sequoia, use **HeliPort v2.0.0-alpha** from the official OpenIntelWireless GitHub releases page:
+
+- [HeliPort Releases](https://github.com/OpenIntelWireless/HeliPort/releases)
+- [HeliPort v2.0.0-alpha](https://github.com/OpenIntelWireless/HeliPort/releases/tag/v2.0.0-alpha)
+
+> **Warning:** HeliPort v2.0.0-alpha is a testing/pre-release build. Use it for Sequoia compatibility and be aware that it may contain bugs.
+
+#### 1. Copy the EFI from the USB to the SSD
+
+After successfully installing macOS and confirming that the system boots correctly from the USB:
+
+1. Boot macOS using the **EFI on the USB**.
+2. Download and open [OpenCore Auxiliary Tools (OCAT)](https://github.com/ic005k/OCAuxiliaryTools).
+3. Mount the **USB EFI partition** and the **internal SSD EFI partition**.
+4. Make a backup of the EFI currently on the SSD.
+5. Copy the working **`EFI` folder from the USB** to the **EFI partition of the internal SSD**.
+6. Open the SSD's `EFI/OC/config.plist` in OCAT and verify that it contains the configuration you used to successfully boot from USB.
+7. Save the configuration.
+8. Reboot and remove the USB.
+9. Confirm that macOS boots directly from the internal SSD.
+
+> **Important:** Do not skip this step. The USB EFI is the known-working EFI used during installation. Copy it to the SSD before continuing with the HeliPort setup.
+
+#### 2. Install HeliPort
+
+1. Boot into Sequoia from the **internal SSD EFI**.
+2. Download **HeliPort v2.0.0-alpha** from the official GitHub release page above.
+3. Open the downloaded file and install **`HeliPort.app`** into `/Applications`.
+4. Launch HeliPort.
+5. Select your Wi-Fi network and connect.
+
+> **Note:** `itlwm.kext` provides Intel Wi-Fi through HeliPort rather than Apple's native Wi-Fi menu. This is expected behavior with the `itlwm + HeliPort` method.
+
+#### 3. Add HeliPort as a Login Item
+
+To make HeliPort start automatically after every boot/login:
+
+1. Open **System Settings**.
+2. Go to **General → Login Items & Extensions**.
+3. Under **Open at Login**, click the **`+`** button.
+4. Select **HeliPort.app** from the **Applications** folder.
+5. Make sure **HeliPort** appears under **Open at Login**.
+
+After this, HeliPort will automatically launch when you log into macOS, so you do not need to manually open it after every boot.
+
+> **Tip:** If HeliPort does not automatically connect to Wi-Fi after login, open HeliPort once and connect to your Wi-Fi network manually. The exact auto-connect behavior may vary with the HeliPort version.
+
+### Ventura vs. Sequoia Post-Install
+
+| Feature | Ventura | Sequoia |
+|---|---|---|
+| OCLP required | Yes | Yes |
+| Broadwell HD 5500 root patching | Yes | Yes |
+| HeliPort required for Intel Wi-Fi | **Yes** | **Yes** |
+| `itlwm.kext` + HeliPort | Required | Required |
+| OCLP root patches after macOS updates | May be required | May be required |
+
+If OCLP needs internet access to obtain additional patching resources, use Ethernet or establish Wi-Fi first. OCLP may require another root-patching run after networking is available so that all required patches can be installed.
+
+For both Ventura and Sequoia, reinstall OCLP root patches after macOS updates if they are removed. [OCLP Updating Guide](https://dortania.github.io/OpenCore-Legacy-Patcher/UPDATE.html)
 
 ---
 
@@ -270,12 +382,11 @@ Replace `MyVolume` with the name of your USB partition.
 
 ### Important Notes
 
-- The online installer is recommended for both **Big Sur and Monterey**.
+- The online installer is recommended for Monterey.
+- Ventura and Sequoia are also supported by this EFI, and both require additional OCLP graphics patching and Intel Wi-Fi setup as described above.
 - If the online installer gives you a black screen or freezes during installation, try recreating the installer using macOS.
 - Make sure your BIOS settings are correct before troubleshooting OpenCore or the installer.
 - After installation, complete the SMBIOS/iServices configuration and the rest of the Post Install guide.
-
----
 
 # Post Install
 Once you have verifed that your machine boots properly without any issues as described in the "What Works section", proceed to do the following
