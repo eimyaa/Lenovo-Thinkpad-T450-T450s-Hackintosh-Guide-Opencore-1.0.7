@@ -1,10 +1,4 @@
-# ********************************
-# I no longer have that laptop so unfortunately I can no longer offer support for this repo
-# This repo will archived and all open issues are closed
-# The current state of this repo is 100% compatible with macOS Big Sur & previous versions
-# ********************************
-
-# Lenovo Thinkpad T450 & T450s Hackintosh Guide for Mojave, Catalina, Big Sur & Monterey with OpenCore
+# Lenovo Thinkpad T450 & T450s Hackintosh Guide for Mojave, Catalina, Big Sur & Monterey with OpenCore 1.0.7
 This repo contains the installation guide and EFI files required to get a perfectly functional Monterey, Big Sur, Catalina and Mojave hackintosh on your T450 or T450s since they share the same hardware. Everything is stable and functional as described in this Readme. 
 
 ## A few worthy mentions about this repo:
@@ -100,7 +94,7 @@ Note: Change `MyVolume` to the name of your usb partiton
 16. Now in the OpenCore menu select `Install macOS 12 Beta`
 Great! Now install and set up macOS Monterey as usual. When you are done be sure to read the post install guide.
 
-## macOS Big Sur Online Installer (Recomended)
+## macOS Big Sur Online (Recomended)
 
 **This is a simple and quick summary of the online install USB creation**
 
